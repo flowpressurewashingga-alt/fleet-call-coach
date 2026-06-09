@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>FleetPRO Call Coach</title>
+<style>
+  :root{
+    --bg:#0d1117; --bg2:#161b22; --card:#1c2330; --card2:#232b3a;
+    --line:#2b3444; --txt:#e6edf3; --dim:#8b97a8; --dimmer:#5d6878;
+    --accent:#ff9900; --accent2:#ffb84d; --good:#3fb950; --bad:#f85149; --blue:#4493f8;
+    --r:16px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    font-size:16px; line-height:1.45;
+    padding-bottom:96px;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 14px}
+
+  header{
+    position:sticky;top:0;z-index:20;
+    background:rgba(13,17,23,.85);backdrop-filter:saturate(160%) blur(12px);
+    border-bottom:1px solid var(--line);
+    padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
+  }
+  .hrow{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:10px}
+  .logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--accent),#ff6a00);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:#1a1205;font-size:18px;flex:0 0 auto}
+  .htitle{font-weight:700;font-size:17px;letter-spacing:.2px}
+  .hsub{font-size:11.5px;color:var(--dim);margin-top:-2px}
+  .gear{margin-left:auto;background:var(--card);border:1px solid var(--line);color:var(--dim);
+    width:38px;height:38px;border-radius:10px;font-size:18px;display:flex;align-items:center;justify-content:center}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;max-width:680px;margin:10px auto 0;overflow-x:auto;-ms-overflow-style:none;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;padding:8px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);
+    color:var(--dim);font-size:13.5px;font-weight:600;white-space:nowrap}
+  .tab.on{background:var(--accent);color:#1a1205;border-color:var(--accent)}
+
+  section{display:none;padding-top:16px}
+  section.on{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;margin-bottom:12px}
+  .card h3{margin:0 0 4px;font-size:14px;letter-spacing:.3px;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .card .lead{font-size:14px;color:var(--dim);margin:0 0 10px}
+
+  label{display:block;font-size:12.5px;color:var(--dim);margin:10px 0 4px;font-weight:600}
+  input,textarea,select{
+    width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--txt);
+    border-radius:11px;padding:11px 12px;font-size:15px;font-family:inherit;outline:none
+  }
+  input:focus,textarea:focus,select:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:64px;line-height:1.45}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+
+  button{font-family:inherit;cursor:pointer;border:none}
+  .btn{background:var(--accent);color:#1a1205;font-weight:700;border-radius:11px;padding:12px 14px;font-size:15px;width:100%}
+  .btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+  .btn.ghost{background:transparent;color:var(--dim);border:1px solid var(--line)}
+  .btn:active{transform:scale(.985)}
+
+  /* objection grid */
+  .obj-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .obj{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 10px;
+    color:var(--txt);font-size:13.5px;font-weight:600;text-align:left;line-height:1.25;min-height:54px;
+    display:flex;align-items:center}
+  .obj:active{border-color:var(--accent);background:#2a3344}
+
+  /* answer panel */
+  .answer{background:linear-gradient(180deg,var(--card2),var(--card));border:1px solid var(--line);
+    border-radius:14px;padding:14px;margin-top:12px;min-height:80px;white-space:pre-wrap;font-size:16px;line-height:1.5}
+  .answer.empty{color:var(--dimmer);font-style:italic}
+  .answer .tag{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;
+    color:var(--accent2);background:rgba(255,153,0,.12);padding:3px 8px;border-radius:6px;margin-bottom:8px}
+  .ansbar{display:flex;gap:8px;margin-top:10px}
+  .ansbar button{flex:1;font-size:13px;padding:9px}
+
+  .mini{font-size:12px;color:var(--dim)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;margin-left:6px}
+  .pill.ok{background:rgba(63,185,80,.15);color:var(--good)}
+  .pill.no{background:rgba(248,81,73,.15);color:var(--bad)}
+
+  .scriptbox{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px;
+    font-size:15.5px;line-height:1.5;white-space:pre-wrap}
+  details{background:var(--card2);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;overflow:hidden}
+  summary{padding:12px 14px;font-weight:600;font-size:14.5px;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+  summary::-webkit-details-marker{display:none}
+  summary .chev{margin-left:auto;color:var(--dim);transition:transform .2s}
+  details[open] summary .chev{transform:rotate(90deg)}
+  details .body{padding:0 14px 14px;font-size:14.5px;color:var(--cbody,#cdd6e0);line-height:1.5}
+
+  .voice{display:flex;gap:8px;align-items:stretch;margin-top:8px}
+  .voice textarea{flex:1;min-height:46px}
+  .micbtn{flex:0 0 auto;width:52px;border-radius:11px;background:var(--card2);border:1px solid var(--line);
+    color:var(--dim);font-size:22px;display:flex;align-items:center;justify-content:center}
+  .micbtn.live{background:var(--bad);color:#fff;border-color:var(--bad);animation:pulse 1.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
+
+  .hist{border-bottom:1px solid var(--line);padding:11px 2px}
+  .hist:last-child{border-bottom:none}
+  .hist b{font-size:14.5px}
+  .hist .meta{font-size:12px;color:var(--dim);margin-top:2px}
+  .outcome{font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px}
+  .o-win{background:rgba(63,185,80,.15);color:var(--good)}
+  .o-follow{background:rgba(68,147,248,.15);color:var(--blue)}
+  .o-no{background:rgba(248,81,73,.15);color:var(--bad)}
+
+  .toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:#000;border:1px solid var(--line);color:#fff;padding:10px 16px;border-radius:10px;font-size:13.5px;
+    transition:all .25s;z-index:50;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .banner{background:rgba(255,153,0,.1);border:1px solid rgba(255,153,0,.35);color:var(--accent2);
+    border-radius:12px;padding:11px 13px;font-size:13px;margin-bottom:12px}
+  .banner a{color:var(--accent2);text-decoration:underline}
+  .stop{background:var(--bad);color:#fff}
+  .row{display:flex;gap:8px}
+  .grow{flex:1}
+  .spacer{height:6px}
+  .footer{text-align:center;color:var(--dimmer);font-size:11.5px;padding:18px 0 6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <div class="logo">F</div>
+    <div>
+      <div class="htitle">FleetPRO Call Coach</div>
+      <div class="hsub" id="statusline">Live cold-call assistant</div>
+    </div>
+    <button class="gear" onclick="go('set')">⚙︎</button>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-t="live" onclick="go('live')">🎧 Live Call</button>
+    <button class="tab" data-t="prospect" onclick="go('prospect')">👤 Prospect</button>
+    <button class="tab" data-t="scripts" onclick="go('scripts')">📋 Scripts</button>
+    <button class="tab" data-t="log" onclick="go('log')">🗒️ Call Log</button>
+    <button class="tab" data-t="set" onclick="go('set')">⚙︎ Setup</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<!-- ===================== LIVE ===================== -->
+<section id="s-live" class="on">
+  <div id="keyBanner" class="banner" style="display:none">
+    Add your Claude API key in <a onclick="go('set')">Setup</a> to enable live AI rebuttals. Until then you'll see the saved fallback scripts.
+  </div>
+
+  <div class="card">
+    <h3>Who are you calling? <span id="pTag" class="mini"></span></h3>
+    <div class="two">
+      <input id="liveCo" placeholder="DSP / company name" oninput="syncProspect()">
+      <input id="liveContact" placeholder="Contact name" oninput="syncProspect()">
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>They objected — tap one</h3>
+    <p class="lead">Claude gives you a spoken-style comeback in ~1–2s. Tap, glance, say it.</p>
+    <div class="obj-grid" id="objGrid"></div>
+
+    <label style="margin-top:14px">Or type / speak exactly what they said</label>
+    <div class="voice">
+      <textarea id="customSay" placeholder='e.g. "We already use a guy down the street and he&#39;s cheap"'></textarea>
+      <button class="micbtn" id="micBtn" onclick="toggleMic()" title="Voice input">🎙️</button>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn" onclick="askCustom()">Get my response →</button>
+
+    <div id="answer" class="answer empty">Your rebuttal will appear here — ready to read out loud.</div>
+    <div class="ansbar" id="ansBar" style="display:none">
+      <button class="btn sec" onclick="copyAnswer()">Copy</button>
+      <button class="btn sec" onclick="regen()">Try another angle</button>
+      <button class="btn ghost" id="stopBtn" onclick="stopGen()" style="display:none">Stop</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Discovery — keep them talking</h3>
+    <div id="discoList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Closing lines</h3>
+    <div id="closeList"></div>
+  </div>
+
+  <div class="card">
+    <h3>Log this call</h3>
+    <textarea id="callNotes" placeholder="What happened? Next step?"></textarea>
+    <div class="spacer"></div>
+    <div class="three">
+      <button class="btn" style="background:var(--good);color:#06210d" onclick="logCall('win')">✓ Booked</button>
+      <button class="btn" style="background:var(--blue);color:#04152b" onclick="logCall('follow')">↻ Follow-up</button>
+      <button class="btn" style="background:var(--bad);color:#2b0605" onclick="logCall('no')">✕ No</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== PROSPECT ===================== -->
+<section id="s-prospect">
+  <div class="card">
+    <h3>Prospect details</h3>
+    <p class="lead">The more you fill in, the more tailored Claude's rebuttals get.</p>
+    <label>Company / DSP name</label>
+    <input id="pCo" oninput="syncProspect(true)">
+    <div class="two">
+      <div><label>Contact name</label><input id="pContact" oninput="saveProspect()"></div>
+      <div><label>Role</label><input id="pRole" placeholder="Owner, Ops mgr…" oninput="saveProspect()"></div>
+    </div>
+    <div class="two">
+      <div><label>Fleet size (# vans)</label><input id="pFleet" inputmode="numeric" placeholder="e.g. 40" oninput="saveProspect()"></div>
+      <div><label>Location</label><input id="pLoc" placeholder="City" oninput="saveProspect()"></div>
+    </div>
+    <label>How are vans cleaned now?</label>
+    <input id="pCurrent" placeholder="Drivers do it / another vendor / not at all" oninput="saveProspect()">
+    <label>Known pain points / notes</label>
+    <textarea id="pNotes" placeholder="Scorecard dings, complaints, peak season, who the decision maker is…" oninput="saveProspect()"></textarea>
+  </div>
+  <button class="btn sec" onclick="clearProspect()">Clear prospect &amp; start fresh</button>
+</section>
+
+<!-- ===================== SCRIPTS ===================== -->
+<section id="s-scripts">
+  <div class="card">
+    <h3>Opening / hook</h3>
+    <p class="lead">Your first 10 seconds. Edit it to sound like you.</p>
+    <textarea id="openScript" style="min-height:120px" oninput="saveScripts()"></textarea>
+    <div class="spacer"></div>
+    <div class="row">
+      <button class="btn grow" onclick="genOpening()">✨ Generate a fresh opener</button>
+      <button class="btn sec" onclick="copyOpening()">Copy</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Voicemail script</h3>
+    <textarea id="vmScript" style="min-height:90px" oninput="saveScripts()"></textarea>
+    <div class="spacer"></div>
+    <button class="btn sec" onclick="copyEl('vmScript')">Copy voicemail</button>
+  </div>
+
+  <div class="card">
+    <h3>Objection playbook (fallbacks)</h3>
+    <p class="lead">These show instantly if AI is off. Tap a header to expand. Editing isn't needed — Claude personalizes the live ones.</p>
+    <div id="playbook"></div>
+  </div>
+</section>
+
+<!-- ===================== LOG ===================== -->
+<section id="s-log">
+  <div class="card">
+    <h3>Today's numbers</h3>
+    <div class="three" style="text-align:center">
+      <div><div style="font-size:26px;font-weight:800" id="statDials">0</div><div class="mini">Dials</div></div>
+      <div><div style="font-size:26px;font-weight:800;color:var(--blue)" id="statFollow">0</div><div class="mini">Follow-ups</div></div>
+      <div><div style="font-size:26px;font-weight:800;color:var(--good)" id="statWins">0</div><div class="mini">Booked</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>Recent calls</h3>
+    <div id="histList"><p class="mini">No calls logged yet.</p></div>
+  </div>
+  <button class="btn sec" onclick="clearHistory()">Clear all history</button>
+</section>
+
+<!-- ===================== SETUP ===================== -->
+<section id="s-set">
+  <div class="card">
+    <h3>Claude API key</h3>
+    <p class="lead">Stored only in this browser (localStorage) on your device. Get one at console.anthropic.com → API Keys.</p>
+    <input id="apiKey" type="password" placeholder="sk-ant-..." autocomplete="off">
+    <label>Model (lower = faster &amp; cheaper for live use)</label>
+    <select id="model">
+      <option value="claude-haiku-4-5">Haiku 4.5 — fastest, cheapest (best for live)</option>
+      <option value="claude-sonnet-4-6">Sonnet 4.6 — balanced</option>
+      <option value="claude-opus-4-8">Opus 4.8 — smartest, a bit slower</option>
+    </select>
+    <div class="spacer"></div>
+    <div class="row">
+      <button class="btn grow" onclick="saveSettings()">Save</button>
+      <button class="btn sec" onclick="testKey()">Test key</button>
+    </div>
+    <div id="testResult" class="mini" style="margin-top:8px"></div>
+    <div class="banner" style="margin-top:12px;background:rgba(248,81,73,.08);border-color:rgba(248,81,73,.3);color:#f9a8a3">
+      Note: a browser-only app puts the key on your device. Fine for personal use on your own phone. If others will use it, put a tiny proxy server in front (see the README) so the key isn't shipped to clients.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Your business (Claude's context)</h3>
+    <p class="lead">This is what Claude uses to pitch. Defaults are pre-filled for Flow Pressure Washing.</p>
+    <label>Company name</label>
+    <input id="bizName" oninput="saveBiz()">
+    <label>What you sell (one line)</label>
+    <input id="bizService" oninput="saveBiz()">
+    <label>Who you target</label>
+    <input id="bizTarget" oninput="saveBiz()">
+    <label>Top value props (one per line)</label>
+    <textarea id="bizValue" style="min-height:120px" oninput="saveBiz()"></textarea>
+    <label>Pricing / offer notes (Claude can reference, won't blurt numbers unless useful)</label>
+    <textarea id="bizPricing" oninput="saveBiz()"></textarea>
+    <label>Your tone</label>
+    <select id="bizTone" onchange="saveBiz()">
+      <option>Friendly &amp; confident</option>
+      <option>Direct &amp; no-nonsense</option>
+      <option>Warm &amp; consultative</option>
+      <option>High-energy &amp; enthusiastic</option>
+    </select>
+  </div>
+  <div class="footer">FleetPRO Call Coach · runs entirely in your browser</div>
+</section>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   STORAGE
+============================================================ */
+const LS = {
+  get(k,d){ try{const v=localStorage.getItem(k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+  set(k,v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+
+const DEFAULT_BIZ = {
+  name:"Flow Pressure Washing",
+  service:"Professional fleet washing — interior & exterior van detailing on a fixed schedule",
+  target:"Amazon DSP owners and fleet/ops managers",
+  value:[
+    "Clean vans protect your Amazon scorecard and brand image at the station",
+    "We handle interior AND exterior on a set weekly/bi-weekly schedule — totally hands-off for you",
+    "Your drivers should be driving, not cleaning — we free up their time and reduce liability",
+    "Reliable, insured, local — we already service other DSPs in the area",
+    "Fixed monthly billing with net-30 terms, no surprises",
+    "Protects van resale/lease condition and reduces long-term wear"
+  ].join("\n"),
+  pricing:"Per-van pricing, scaled to fleet size and frequency. Lead with value and time saved, not price. Offer a low-risk first wash / walkthrough.",
+  tone:"Friendly & confident"
+};
+
+const DEFAULT_SCRIPTS = {
+  open:"Hey [name], this is [you] with Flow Pressure Washing — I'll be quick. We keep DSP fleets spotless inside and out so your vans always look station-ready and your drivers aren't stuck cleaning. Real quick — who handles van cleaning for you right now?",
+  vm:"Hi [name], [you] with Flow Pressure Washing. We do scheduled interior and exterior washing for Amazon DSP fleets — keeps your vans scorecard-ready and your drivers focused on routes. I'd love 2 minutes. Call me back at [number], thanks!"
+};
+
+/* Objections: label = button text, key = short id, fallback = canned line */
+const OBJECTIONS = [
+  {key:"price", label:"💸 Too expensive",
+   fallback:"Totally fair to look at cost — most owners do. Quick question though: what's it costing you when a van shows up dirty to the station, or when a driver burns 20 minutes cleaning instead of running their route? Most DSPs find we actually save them money on labor and headaches. Want me to break it down per van?"},
+  {key:"diy", label:"🧽 We do it ourselves",
+   fallback:"Makes sense — a lot of DSPs start that way. The thing is, when drivers do it it's inconsistent, it eats into route time, and it's a liability if someone slips. We make it hands-off and on-schedule so it's just handled. How often are they actually getting cleaned right now?"},
+  {key:"notint", label:"🚫 Not interested",
+   fallback:"No problem, I won't keep you. Just so I'm not wasting your time down the road — is it that the vans are already handled, or just not a priority right now?"},
+  {key:"sendinfo", label:"📧 Send me info",
+   fallback:"Happy to. So I send the right thing and not a generic flyer — roughly how many vans are we talking, and are you more concerned with the interiors or the exteriors? I'll fire it over and follow up [day]."},
+  {key:"havesomeone", label:"🤝 Already have a guy",
+   fallback:"Good — means you already value it. What do you like about them, and is there anything they're not nailing? A lot of our clients keep us as a reliable backup at first, then switch once they see the consistency. Mind if I send a quick comparison?"},
+  {key:"notime", label:"⏱️ No time right now",
+   fallback:"I hear you, you're slammed — I'll be 20 seconds or I'll get out of your hair. Would it be better if I caught you early morning or after dispatch? When works?"},
+  {key:"boss", label:"🙋 Have to ask...",
+   fallback:"Makes sense — who's the right person on the cleaning decision, and when do you usually talk? I can send a one-pager you can forward, and circle back after. Sound good?"},
+  {key:"callback", label:"📞 Call me later",
+   fallback:"Absolutely. Rather than play phone tag — is [day] morning or afternoon better? I'll lock it in so I'm not bugging you randomly."}
+];
+
+const DISCOVERY = [
+  "How many vans are in your fleet right now?",
+  "Who's handling the cleaning today — drivers, a vendor, or nobody really?",
+  "How often do they actually get washed, honestly?",
+  "Have you ever taken a hit on appearance or had a station comment on it?",
+  "If we made this completely hands-off, what would matter most — price, consistency, or interiors?",
+  "When's your busiest stretch where clean vans matter most?"
+];
+
+const CLOSES = [
+  "Here's what I'd suggest: let's do one wash so you can see the difference — no commitment. What day are your vans parked and available?",
+  "I can get you on a weekly or bi-weekly schedule. Which fits your operation better?",
+  "Let's grab 15 minutes at your lot so I can quote it properly. Does [day] morning work?",
+  "Worst case you get one fleet of spotless vans out of it. Want me to pencil you in this week?"
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+let biz, prospect, scripts, settings, history;
+let lastObjection = null;     // for "try another angle"
+let lastCustom = null;
+let abortCtrl = null;
+
+function loadAll(){
+  biz      = LS.get('fp_biz', DEFAULT_BIZ);
+  prospect = LS.get('fp_prospect', {});
+  scripts  = LS.get('fp_scripts', DEFAULT_SCRIPTS);
+  settings = LS.get('fp_settings', {key:'', model:'claude-haiku-4-5'});
+  history  = LS.get('fp_history', []);
+}
+
+/* ============================================================
+   NAV
+============================================================ */
+function go(t){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s-'+t).classList.add('on');
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.t===t));
+  window.scrollTo(0,0);
+}
+
+/* ============================================================
+   RENDER
+============================================================ */
+function renderObjections(){
+  const g = document.getElementById('objGrid');
+  g.innerHTML = '';
+  OBJECTIONS.forEach(o=>{
+    const b = document.createElement('button');
+    b.className='obj'; b.textContent=o.label;
+    b.onclick=()=>askObjection(o);
+    g.appendChild(b);
+  });
+}
+function renderLists(){
+  const d = document.getElementById('discoList'); d.innerHTML='';
+  DISCOVERY.forEach(q=>{
+    const el=document.createElement('div'); el.className='scriptbox'; el.style.marginBottom='8px';
+    el.textContent=q; d.appendChild(el);
+  });
+  const c = document.getElementById('closeList'); c.innerHTML='';
+  CLOSES.forEach(q=>{
+    const el=document.createElement('div'); el.className='scriptbox'; el.style.marginBottom='8px';
+    el.textContent=q; c.appendChild(el);
+  });
+}
+function renderPlaybook(){
+  const p = document.getElementById('playbook'); p.innerHTML='';
+  OBJECTIONS.forEach(o=>{
+    const d=document.createElement('details');
+    d.innerHTML='<summary>'+o.label+'<span class="chev">›</span></summary><div class="body">'+esc(o.fallback)+'</div>';
+    p.appendChild(d);
+  });
+}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+/* ============================================================
+   PROSPECT
+============================================================ */
+function fillProspect(){
+  pCo.value=prospect.co||''; pContact.value=prospect.contact||''; pRole.value=prospect.role||'';
+  pFleet.value=prospect.fleet||''; pLoc.value=prospect.loc||''; pCurrent.value=prospect.current||'';
+  pNotes.value=prospect.notes||'';
+  liveCo.value=prospect.co||''; liveContact.value=prospect.contact||'';
+  updatePTag();
+}
+function saveProspect(){
+  prospect={co:pCo.value,contact:pContact.value,role:pRole.value,fleet:pFleet.value,
+    loc:pLoc.value,current:pCurrent.value,notes:pNotes.value};
+  LS.set('fp_prospect',prospect);
+  liveCo.value=prospect.co; liveContact.value=prospect.contact;
+  updatePTag();
+}
+function syncProspect(fromProspectTab){
+  // from the live tab inputs
+  prospect.co=liveCo.value; prospect.contact=liveContact.value;
+  pCo.value=liveCo.value; pContact.value=liveContact.value;
+  LS.set('fp_prospect',prospect);
+  updatePTag();
+}
+function updatePTag(){
+  const name = prospect.co || prospect.contact;
+  const tag = name ? ('• '+name+(prospect.fleet?(' · '+prospect.fleet+' vans'):'')) : '';
+  document.getElementById('pTag').textContent = tag;
+}
+function clearProspect(){
+  if(!confirm('Clear all prospect details?'))return;
+  prospect={}; LS.set('fp_prospect',{}); fillProspect(); toast('Prospect cleared');
+}
+
+/* ============================================================
+   SCRIPTS / BIZ / SETTINGS persistence
+============================================================ */
+function fillScripts(){ openScript.value=scripts.open||''; vmScript.value=scripts.vm||''; }
+function saveScripts(){ scripts={open:openScript.value,vm:vmScript.value}; LS.set('fp_scripts',scripts); }
+
+function fillBiz(){
+  bizName.value=biz.name; bizService.value=biz.service; bizTarget.value=biz.target;
+  bizValue.value=biz.value; bizPricing.value=biz.pricing; bizTone.value=biz.tone;
+}
+function saveBiz(){
+  biz={name:bizName.value,service:bizService.value,target:bizTarget.value,
+    value:bizValue.value,pricing:bizPricing.value,tone:bizTone.value};
+  LS.set('fp_biz',biz);
+}
+function fillSettings(){ apiKey.value=settings.key||''; model.value=settings.model||'claude-haiku-4-5'; }
+function saveSettings(){
+  settings={key:apiKey.value.trim(),model:model.value};
+  LS.set('fp_settings',settings); updateKeyBanner(); toast('Saved');
+}
+function updateKeyBanner(){
+  const has=!!(settings.key);
+  document.getElementById('keyBanner').style.display = has?'none':'block';
+  document.getElementById('statusline').textContent = has
+    ? ('AI on · '+model.value.replace('claude-','').replace('-',' '))
+    : 'Fallback scripts (add API key)';
+}
+
+/* ============================================================
+   CLAUDE API  (browser-direct streaming)
+============================================================ */
+function buildSystem(){
+  const p = prospect||{};
+  const pBits = [];
+  if(p.co) pBits.push('Company: '+p.co);
+  if(p.contact) pBits.push('Contact: '+p.contact+(p.role?(' ('+p.role+')'):''));
+  if(p.fleet) pBits.push('Fleet size: '+p.fleet+' vans');
+  if(p.loc) pBits.push('Location: '+p.loc);
+  if(p.current) pBits.push('Current cleaning: '+p.current);
+  if(p.notes) pBits.push('Notes: '+p.notes);
+  const prospectBlock = pBits.length ? ('\n\nWHO THEY ARE CALLING RIGHT NOW:\n'+pBits.join('\n')) : '';
+
+  return [
+"You are a live cold-calling coach feeding lines to a salesperson DURING a phone call. Speed and usability matter most.",
+"",
+"THE SALESPERSON'S BUSINESS:",
+"Company: "+biz.name,
+"Sells: "+biz.service,
+"Targets: "+biz.target,
+"Value props:\n"+biz.value,
+"Pricing/offer: "+biz.pricing,
+"Tone to use: "+biz.tone,
+prospectBlock,
+"",
+"YOUR JOB: When given an objection or something the prospect said, write the exact words the salesperson should say back, OUT LOUD, right now.",
+"",
+"RULES:",
+"- Reply with ONLY the spoken line(s). No preamble, no labels, no 'You could say', no reasoning, no quotes around it.",
+"- Keep it SHORT — 2 to 4 sentences max. It must be sayable in one breath or two.",
+"- Sound natural and human, like real phone talk, not a written paragraph.",
+"- Acknowledge first, reframe, then end with a question to keep them talking.",
+"- Use the prospect's name and fleet size if known. Reference Amazon DSP / scorecard realities when relevant.",
+"- Never invent specific prices unless the pricing notes give them; steer to value and a low-risk next step.",
+"- Vary the angle if asked again."
+  ].join("\n");
+}
+
+async function streamClaude(userText, {onToken, onDone, onError}){
+  if(!settings.key){ onError && onError('nokey'); return; }
+  abortCtrl = new AbortController();
+  const body = {
+    model: settings.model,
+    max_tokens: 700,
+    system: buildSystem(),
+    messages: [{role:'user', content:userText}],
+    stream: true
+  };
+  // effort only valid on opus/sonnet 4.6+ — keeps Haiku from 400-ing
+  if(/opus|sonnet/.test(settings.model)){ body.output_config = {effort:'low'}; }
+
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'content-type':'application/json',
+        'x-api-key':settings.key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify(body),
+      signal:abortCtrl.signal
+    });
+    if(!res.ok){
+      let msg='HTTP '+res.status;
+      try{const j=await res.json(); if(j.error&&j.error.message) msg=j.error.message;}catch(e){}
+      onError && onError(msg); return;
+    }
+    const reader=res.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+    while(true){
+      const {done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+      for(const line of lines){
+        const t=line.trim();
+        if(!t.startsWith('data:'))continue;
+        const data=t.slice(5).trim();
+        if(data==='[DONE]')continue;
+        try{
+          const ev=JSON.parse(data);
+          if(ev.type==='content_block_delta' && ev.delta && ev.delta.type==='text_delta'){
+            onToken(ev.delta.text);
+          }
+        }catch(e){}
+      }
+    }
+    onDone && onDone();
+  }catch(err){
+    if(err.name==='AbortError'){ onDone && onDone(); }
+    else { onError && onError(err.message||'Network error'); }
+  }
+}
+
+/* ============================================================
+   LIVE ACTIONS
+============================================================ */
+const ansEl=document.getElementById('answer');
+const ansBar=document.getElementById('ansBar');
+const stopBtn=document.getElementById('stopBtn');
+
+function showAnswerShell(tag){
+  ansEl.classList.remove('empty');
+  ansEl.innerHTML='<span class="tag">'+tag+'</span><span id="ansText"></span><span id="cursor">▍</span>';
+  ansBar.style.display='flex';
+}
+function setAnswerText(s){
+  const t=document.getElementById('ansText'); if(t) t.textContent=s;
+}
+
+function nameLine(extra){
+  const p=prospect||{};
+  let s='';
+  if(p.contact) s+='Prospect name: '+p.contact+'. ';
+  if(p.fleet) s+='They run about '+p.fleet+' vans. ';
+  return s+(extra||'');
+}
+
+function runStream(userText, tag){
+  if(!settings.key){
+    // fallback handled by caller
+    return false;
+  }
+  showAnswerShell(tag);
+  stopBtn.style.display='block';
+  let acc='';
+  streamClaude(userText,{
+    onToken:(tk)=>{ acc+=tk; setAnswerText(acc.trim());
+      ansEl.scrollIntoView({block:'nearest'}); },
+    onDone:()=>{ const c=document.getElementById('cursor'); if(c)c.remove(); stopBtn.style.display='none'; },
+    onError:(e)=>{
+      const c=document.getElementById('cursor'); if(c)c.remove(); stopBtn.style.display='none';
+      setAnswerText('⚠️ '+e+'\n\n(Showing this so you can keep moving — try again, or check your API key in Setup.)');
+    }
+  });
+  return true;
+}
+
+function askObjection(o){
+  lastObjection=o; lastCustom=null;
+  const prompt = nameLine('They just raised this objection: "'+o.label.replace(/^[^\w]+/,'').trim()+'". Give me my comeback.');
+  if(!runStream(prompt, o.label.replace(/^[^\w]+/,'').trim())){
+    // fallback
+    ansEl.classList.remove('empty');
+    ansEl.innerHTML='<span class="tag">'+esc(o.label)+'</span>'+esc(o.fallback);
+    ansBar.style.display='flex';
+  }
+}
+
+function askCustom(){
+  const said=document.getElementById('customSay').value.trim();
+  if(!said){ toast('Type or speak what they said first'); return; }
+  lastCustom=said; lastObjection=null;
+  const prompt = nameLine('The prospect just said: "'+said+'". Give me my best response.');
+  if(!runStream(prompt,'Their words')){
+    ansEl.classList.remove('empty');
+    ansEl.innerHTML='<span class="tag">No API key</span>Add your Claude key in Setup to get a tailored response. For now use the objection buttons above for instant scripts.';
+    ansBar.style.display='flex';
+  }
+}
+
+function regen(){
+  if(lastObjection){
+    const o=lastObjection;
+    const prompt=nameLine('They raised: "'+o.label.replace(/^[^\w]+/,'').trim()+'". Give me a DIFFERENT comeback than before — try a fresh angle.');
+    runStream(prompt,o.label.replace(/^[^\w]+/,'').trim()+' · v2');
+  } else if(lastCustom){
+    const prompt=nameLine('The prospect said: "'+lastCustom+'". Give me a DIFFERENT response than before — fresh angle.');
+    runStream(prompt,'Their words · v2');
+  } else { toast('Pick an objection first'); }
+}
+
+function stopGen(){ if(abortCtrl) abortCtrl.abort(); }
+
+function copyAnswer(){
+  const t=document.getElementById('ansText');
+  const txt = t ? t.textContent : ansEl.textContent.replace(/^.*?\n?/,'');
+  copy(txt);
+}
+
+/* opening generator */
+function genOpening(){
+  if(!settings.key){ toast('Add API key in Setup first'); return; }
+  openScript.value='Generating…';
+  let acc='';
+  const prompt='Write a fresh, natural cold-call OPENER (the first 10-15 seconds) for '+biz.name+
+    ' calling '+(prospect.contact||'an Amazon DSP owner')+'. Sell: '+biz.service+
+    '. Keep it under 4 sentences, sound human, end with an easy question. Use placeholders like [name] and [you] where needed. Reply with ONLY the opener.';
+  streamClaude(prompt,{
+    onToken:(tk)=>{acc+=tk; openScript.value=acc.trim();},
+    onDone:()=>{saveScripts();},
+    onError:(e)=>{openScript.value=scripts.open||''; toast('⚠️ '+e);}
+  });
+}
+
+/* ============================================================
+   VOICE INPUT (Web Speech API)
+============================================================ */
+let recog=null, recering=false;
+function toggleMic(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ toast('Voice not supported in this browser'); return; }
+  if(recering){ recog && recog.stop(); return; }
+  recog=new SR();
+  recog.lang='en-US'; recog.interimResults=true; recog.continuous=false;
+  const ta=document.getElementById('customSay');
+  const base=ta.value?ta.value+' ':'';
+  recog.onstart=()=>{recering=true; document.getElementById('micBtn').classList.add('live');};
+  recog.onresult=(e)=>{
+    let s='';
+    for(let i=0;i<e.results.length;i++) s+=e.results[i][0].transcript;
+    ta.value=base+s;
+  };
+  recog.onerror=()=>{toast('Mic error — check permission');};
+  recog.onend=()=>{recering=false; document.getElementById('micBtn').classList.remove('live');};
+  recog.start();
+}
+
+/* ============================================================
+   CALL LOG
+============================================================ */
+function logCall(outcome){
+  const name = prospect.co || prospect.contact || liveCo.value || 'Unknown';
+  const entry={
+    name, outcome,
+    notes: document.getElementById('callNotes').value.trim(),
+    fleet: prospect.fleet||'',
+    ts: Date.now()
+  };
+  history.unshift(entry);
+  LS.set('fp_history',history);
+  document.getElementById('callNotes').value='';
+  renderHistory();
+  toast(outcome==='win'?'Booked! 🎉':outcome==='follow'?'Follow-up saved':'Logged');
+}
+function renderHistory(){
+  const wrap=document.getElementById('histList');
+  // stats for today
+  const today=new Date(); today.setHours(0,0,0,0);
+  let dials=0,wins=0,follow=0;
+  history.forEach(h=>{ if(h.ts>=today.getTime()){ dials++; if(h.outcome==='win')wins++; if(h.outcome==='follow')follow++; }});
+  document.getElementById('statDials').textContent=dials;
+  document.getElementById('statWins').textContent=wins;
+  document.getElementById('statFollow').textContent=follow;
+
+  if(!history.length){ wrap.innerHTML='<p class="mini">No calls logged yet.</p>'; return; }
+  wrap.innerHTML='';
+  history.slice(0,40).forEach(h=>{
+    const d=document.createElement('div'); d.className='hist';
+    const oc = h.outcome==='win'?'<span class="outcome o-win">BOOKED</span>'
+             : h.outcome==='follow'?'<span class="outcome o-follow">FOLLOW-UP</span>'
+             : '<span class="outcome o-no">NO</span>';
+    const when=new Date(h.ts).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+    d.innerHTML='<div style="display:flex;align-items:center;gap:8px"><b>'+esc(h.name)+'</b>'+oc+'</div>'+
+      '<div class="meta">'+when+(h.fleet?(' · '+esc(h.fleet)+' vans'):'')+(h.notes?(' · '+esc(h.notes)):'')+'</div>';
+    wrap.appendChild(d);
+  });
+}
+function clearHistory(){
+  if(!confirm('Delete all logged calls?'))return;
+  history=[]; LS.set('fp_history',[]); renderHistory(); toast('History cleared');
+}
+
+/* ============================================================
+   TEST KEY
+============================================================ */
+async function testKey(){
+  const r=document.getElementById('testResult');
+  const k=apiKey.value.trim();
+  if(!k){ r.innerHTML='<span class="pill no">No key</span>'; return; }
+  r.textContent='Testing…';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'content-type':'application/json','x-api-key':k,'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:model.value,max_tokens:8,messages:[{role:'user',content:'hi'}]})
+    });
+    if(res.ok){ r.innerHTML='<span class="pill ok">Key works ✓</span>'; }
+    else { let m='HTTP '+res.status; try{const j=await res.json();if(j.error)m=j.error.message;}catch(e){}
+      r.innerHTML='<span class="pill no">'+esc(m)+'</span>'; }
+  }catch(e){ r.innerHTML='<span class="pill no">'+esc(e.message||'Network error')+'</span>'; }
+}
+
+/* ============================================================
+   UTIL
+============================================================ */
+function copy(t){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy failed'));
+  } else { const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta);
+    ta.select(); try{document.execCommand('copy');toast('Copied');}catch(e){} ta.remove(); }
+}
+function copyEl(id){ copy(document.getElementById(id).value); }
+function copyOpening(){ copy(openScript.value); }
+let toastT;
+function toast(m){ const e=document.getElementById('toast'); e.textContent=m; e.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>e.classList.remove('show'),1600); }
+
+/* ============================================================
+   INIT
+============================================================ */
+function init(){
+  loadAll();
+  renderObjections(); renderLists(); renderPlaybook();
+  fillProspect(); fillScripts(); fillBiz(); fillSettings();
+  renderHistory(); updateKeyBanner();
+}
+init();
+</script>
+</body>
+</html>
